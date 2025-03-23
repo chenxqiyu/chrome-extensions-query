@@ -1,28 +1,28 @@
-# ¶¨ÒåÄ¿Â¼Â·¾¶
+# å®šä¹‰ç›®å½•è·¯å¾„
 $directory = "C:\Users\Administrator\AppData\Local\Google\Chrome\User Data\Default\Extensions"
 
-# ¶¨ÒåÒ»¸öº¯Êı£¬ÓÃÓÚ´Ó _locales Ä¿Â¼ÖĞ¶ÁÈ¡ÏûÏ¢Öµ
+# å®šä¹‰ä¸€ä¸ªå‡½æ•°ï¼Œç”¨äºä» _locales ç›®å½•ä¸­è¯»å–æ¶ˆæ¯å€¼
 function Get-MessageValue {
     param (
-        [string]$MessageKey,   # ÏûÏ¢¼ü£¨Èç __MSG_application_title__£©
-        [string]$ManifestPath  # manifest.json ËùÔÚµÄÄ¿Â¼Â·¾¶
+        [string]$MessageKey,   # æ¶ˆæ¯é”®ï¼ˆå¦‚ __MSG_application_title__ï¼‰
+        [string]$ManifestPath  # manifest.json æ‰€åœ¨çš„ç›®å½•è·¯å¾„
     )
 
-    # È¥µô __MSG_ Ç°×ººÍ __ ºó×º£¬»ñÈ¡ÏûÏ¢¼ü
+    # å»æ‰ __MSG_ å‰ç¼€å’Œ __ åç¼€ï¼Œè·å–æ¶ˆæ¯é”®
     $messageKey = $MessageKey -replace "^__MSG_", "" -replace "__$", ""
 
-    # ²éÕÒ _locales Ä¿Â¼
+    # æŸ¥æ‰¾ _locales ç›®å½•
     $localesPath = Join-Path -Path $ManifestPath -ChildPath "_locales"
     if (-not (Test-Path -Path $localesPath)) {
         Write-Host "Warning: _locales directory not found for $ManifestPath"
         return $MessageKey
     }
 
-    # »ñÈ¡Ä¬ÈÏÓïÑÔ£¨Í¨³£ÊÇ en£©
+    # è·å–é»˜è®¤è¯­è¨€ï¼ˆé€šå¸¸æ˜¯ enï¼‰
     $defaultLanguage = "zh_CN"
     $messagesPath = Join-Path -Path $localesPath -ChildPath "$defaultLanguage\messages.json"
 
-    # Èç¹ûÄ¬ÈÏÓïÑÔÎÄ¼ş²»´æÔÚ£¬³¢ÊÔÆäËûÓïÑÔÎÄ¼ş
+    # å¦‚æœé»˜è®¤è¯­è¨€æ–‡ä»¶ä¸å­˜åœ¨ï¼Œå°è¯•å…¶ä»–è¯­è¨€æ–‡ä»¶
     if (-not (Test-Path -Path $messagesPath)) {
         $languages = Get-ChildItem -Path $localesPath -Directory
         if ($languages.Count -eq 0) {
@@ -32,17 +32,17 @@ function Get-MessageValue {
         $messagesPath = Join-Path -Path $localesPath -ChildPath "$($languages[0].Name)\messages.json"
     }
 
-    # ¼ì²éÎÄ¼şÊÇ·ñ´æÔÚ
+    # æ£€æŸ¥æ–‡ä»¶æ˜¯å¦å­˜åœ¨
     if (-not (Test-Path -Path $messagesPath)) {
         Write-Host "Warning: messages.json file not found at $messagesPath"
         return $MessageKey
     }
 
-    # ¶ÁÈ¡ÎÄ¼şÄÚÈİ²¢³¢ÊÔ×ª»»Îª JSON
+    # è¯»å–æ–‡ä»¶å†…å®¹å¹¶å°è¯•è½¬æ¢ä¸º JSON
     try {
         $messagesContent = Get-Content -Path $messagesPath -Raw -Encoding UTF8 -ErrorAction Stop
 
-        # Èç¹ûÎÄ¼şÄÚÈİ²»ÍêÕû£¬³¢ÊÔĞŞ¸´
+        # å¦‚æœæ–‡ä»¶å†…å®¹ä¸å®Œæ•´ï¼Œå°è¯•ä¿®å¤
         if (-not ($messagesContent -match "\}$")) {
             $messagesContent = $messagesContent.Trim() 
             #Write-Host "Fixed incomplete JSON in $messagesPath"
@@ -61,33 +61,40 @@ function Get-MessageValue {
     }
 }
 
-# »ñÈ¡Ä¿Â¼ÏÂËùÓĞµÄ manifest.json ÎÄ¼ş
+# è·å–ç›®å½•ä¸‹æ‰€æœ‰çš„ manifest.json æ–‡ä»¶
 $manifestFiles = Get-ChildItem -Path $directory -Recurse -Filter "manifest.json"
 
-# ±éÀúÃ¿¸öÎÄ¼ş²¢¶ÁÈ¡ name ºÍ description
+$strall=""
+
+# éå†æ¯ä¸ªæ–‡ä»¶å¹¶è¯»å– name å’Œ description
 foreach ($file in $manifestFiles) {
-    # ¶ÁÈ¡ÎÄ¼şÄÚÈİ²¢×ª»»Îª JSON ¶ÔÏó
+    # è¯»å–æ–‡ä»¶å†…å®¹å¹¶è½¬æ¢ä¸º JSON å¯¹è±¡
     $jsonContent = Get-Content -Path $file.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
 
-    # ÌáÈ¡ name ºÍ description
+    # æå– name å’Œ description
     $name = $jsonContent.name
     $description = $jsonContent.description
 
-    # Èç¹û name ÊÇ __MSG_ ¿ªÍ·µÄÕ¼Î»·û£¬¶ÁÈ¡Êµ¼ÊÖµ
+    # å¦‚æœ name æ˜¯ __MSG_ å¼€å¤´çš„å ä½ç¬¦ï¼Œè¯»å–å®é™…å€¼
     if ($name -like "__MSG_*") {
         $name = Get-MessageValue -MessageKey $name -ManifestPath $file.DirectoryName
     }
 
-    # Èç¹û description ÊÇ __MSG_ ¿ªÍ·µÄÕ¼Î»·û£¬¶ÁÈ¡Êµ¼ÊÖµ
+    # å¦‚æœ description æ˜¯ __MSG_ å¼€å¤´çš„å ä½ç¬¦ï¼Œè¯»å–å®é™…å€¼
     if ($description -like "__MSG_*") {
         $description = Get-MessageValue -MessageKey $description -ManifestPath $file.DirectoryName
     }
 
-    # Êä³ö½á¹û
+    # è¾“å‡ºç»“æœ
     Write-Host "File: $($file.FullName)"
     Write-Host "Name: $name"
     Write-Host "Description: $description"
     Write-Host "-----------------------------"
-}
 
+    $strall += "File: $($file.FullName)`n"
+    $strall += "Name: $name`n"
+    $strall += "Description: $description`n"
+    $strall += "-----------------------------`n"
+}
+$strall | Out-File -FilePath "ex.txt" -Encoding UTF8
 pause
